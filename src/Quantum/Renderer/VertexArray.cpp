@@ -1,19 +1,21 @@
-#include"qtpch.h"
-#include"VertexArray.h"
-#include"Renderer.h"
-#include"Platform/OpenGL/OpenGLVertexArray.h"
-namespace Quantum {
+#include "hzpch.h"
+#include "Hazel/Renderer/VertexArray.h"
+
+#include "Hazel/Renderer/Renderer.h"
+#include "Platform/OpenGL/OpenGLVertexArray.h"
+
+namespace Hazel {
+
 	Ref<VertexArray> VertexArray::Create()
 	{
 		switch (Renderer::GetAPI())
 		{
+			case RendererAPI::API::None:    HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+			case RendererAPI::API::OpenGL:  return CreateRef<OpenGLVertexArray>();
+		}
 
-		case RendererAPI::API::None: QT_CORE_ASSERT(false, "Renderer API None is currently not supported!");
-			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLVertexArray>();
-		}
-		QT_CORE_ASSERT(false, "Unkown RendererAPI!");
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
-		}
 	}
+
+}

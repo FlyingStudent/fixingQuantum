@@ -1,8 +1,8 @@
-#include"qtpch.h"
-#include"RenderCommand.h"
+#include "hzpch.h"
+#include "Hazel/Renderer/RenderCommand.h"
 
-namespace Quantum
-{
+namespace Hazel {
 
 	Scope<RendererAPI> RenderCommand::s_RendererAPI = RendererAPI::Create();
+
 }

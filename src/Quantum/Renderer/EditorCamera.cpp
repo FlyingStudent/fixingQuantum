@@ -1,16 +1,16 @@
-#include "qtpch.h"
+#include "hzpch.h"
 #include "EditorCamera.h"
 
-#include "Quantum/Core/Input.h"
-#include "Quantum/Core/KeyCodes.h"
-#include "Quantum/Core/MouseButtonsCode.h"
+#include "Hazel/Core/Input.h"
+#include "Hazel/Core/KeyCodes.h"
+#include "Hazel/Core/MouseCodes.h"
 
 #include <glfw/glfw3.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
-namespace Quantum {
+namespace Hazel {
 
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
 		: m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip), Camera(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
@@ -59,7 +59,7 @@ namespace Quantum {
 		return speed;
 	}
 
-	void EditorCamera::OnUpdate(TimeStep ts)
+	void EditorCamera::OnUpdate(Timestep ts)
 	{
 		if (Input::IsKeyPressed(Key::LeftAlt))
 		{
@@ -81,7 +81,7 @@ namespace Quantum {
 	void EditorCamera::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<MouseScrolledEvent>(QT_BIND_EVENT_FN(EditorCamera::OnMouseScroll));
+		dispatcher.Dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(EditorCamera::OnMouseScroll));
 	}
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)

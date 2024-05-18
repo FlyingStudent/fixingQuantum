@@ -1,30 +1,31 @@
 #pragma once
-#include<memory>
 
-#include"Quantum/Core/PlatformDetection.h"
-#ifdef QT_DEBUG
-#if defined(QT_PLATFORM_WINDOWS)
-#define QT_DEBUGBREAK() __debugbreak()
-#elif defined(QT_PLATFORM_LINUX)
-#include <signal.h>
-#define QT_DEBUGBREAK() raise(SIGTRAP)
+#include <memory>
+
+#include "Hazel/Core/PlatformDetection.h"
+
+#ifdef HZ_DEBUG
+	#if defined(HZ_PLATFORM_WINDOWS)
+		#define HZ_DEBUGBREAK() __debugbreak()
+	#elif defined(HZ_PLATFORM_LINUX)
+		#include <signal.h>
+		#define HZ_DEBUGBREAK() raise(SIGTRAP)
+	#else
+		#error "Platform doesn't support debugbreak yet!"
+	#endif
+	#define HZ_ENABLE_ASSERTS
 #else
-#error "Platform doesn't support debugbreak yet!"
+	#define HZ_DEBUGBREAK()
 #endif
 
-#define QT_ENABLE_ASSERTS
-#else 
-#define QT_DEBUGBREAK()
-#endif 
-
-#define QT_EXPAND_MACRO(x) x
-#define QT_STRINGIFY_MACRO(x) #x
+#define HZ_EXPAND_MACRO(x) x
+#define HZ_STRINGIFY_MACRO(x) #x
 
 #define BIT(x) (1 << x)
 
-#define QT_BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
+#define HZ_BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
-namespace Quantum {
+namespace Hazel {
 
 	template<typename T>
 	using Scope = std::unique_ptr<T>;
@@ -44,5 +45,5 @@ namespace Quantum {
 
 }
 
-#include "Quantum/Core/Log.h"
-#include "Quantum/Core/Assert.h"
+#include "Hazel/Core/Log.h"
+#include "Hazel/Core/Assert.h"

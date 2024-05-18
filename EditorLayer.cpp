@@ -1,28 +1,29 @@
 #include "EditorLayer.h"
-
-#include "Quantum/Scene/SceneSerializer.h"
-#include "Quantum/Utils/PlatformUtils.h"
-#include "Quantum/Math/Math.h"
-
 #include <imgui/imgui.h>
-#include "ImGuizmo.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Hazel/Scene/SceneSerializer.h"
 
-namespace Quantum {
+#include "Hazel/Utils/PlatformUtils.h"
 
-	extern const std::filesystem::path g_AssetsPath;
+#include "ImGuizmo.h"
+
+#include "Hazel/Math/Math.h"
+
+namespace Hazel {
+
+	extern const std::filesystem::path g_AssetPath;
 
 	EditorLayer::EditorLayer()
-		: Layer("EditorLayer"), m_CameraController(800.0f / 600.0f), m_SquareColor({ 0.2f, 0.3f, 0.8f, 1.0f })
+		: Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f), m_SquareColor({ 0.2f, 0.3f, 0.8f, 1.0f })
 	{
 	}
 
 	void EditorLayer::OnAttach()
 	{
-		QT_PROFILE_FUNCTION();
+		HZ_PROFILE_FUNCTION();
 
 		m_CheckerboardTexture = Texture2D::Create("assets/textures/Checkerboard.png");
 		m_IconPlay = Texture2D::Create("Resources/Icons/PlayButton.png");
@@ -30,19 +31,18 @@ namespace Quantum {
 
 		FramebufferSpecification fbSpec;
 		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
-		fbSpec.Width = 800;
-		fbSpec.Height = 600;
+		fbSpec.Width = 1280;
+		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 
 		m_ActiveScene = CreateRef<Scene>();
-
 
 		auto commandLineArgs = Application::Get().GetCommandLineArgs();
 		if (commandLineArgs.Count > 1)
 		{
 			auto sceneFilePath = commandLineArgs[1];
 			SceneSerializer serializer(m_ActiveScene);
-			serializer.DeSerialize(sceneFilePath);
+			serializer.Deserialize(sceneFilePath);
 		}
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
@@ -52,12 +52,12 @@ namespace Quantum {
 
 	void EditorLayer::OnDetach()
 	{
-		QT_PROFILE_FUNCTION();
+		HZ_PROFILE_FUNCTION();
 	}
 
-	void EditorLayer::OnUpdate(TimeStep ts)
+	void EditorLayer::OnUpdate(Timestep ts)
 	{
-		QT_PROFILE_FUNCTION();
+		HZ_PROFILE_FUNCTION();
 
 		// Resize
 		if (FramebufferSpecification spec = m_Framebuffer->GetSpecification();
@@ -84,11 +84,11 @@ namespace Quantum {
 			case SceneState::Edit:
 			{
 				if (m_ViewportFocused)
-{
+				{
 					m_CameraController.OnUpdate(ts);
 
-				m_EditorCamera.OnUpdate(ts);
-}
+					m_EditorCamera.OnUpdate(ts);
+				}
 				m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
 				break;
 			}
@@ -113,12 +113,12 @@ namespace Quantum {
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
 		}
 
-		m_Framebuffer->UnBind();
+		m_Framebuffer->Unbind();
 	}
 
 	void EditorLayer::OnImGuiRender()
 	{
-		QT_PROFILE_FUNCTION();
+		HZ_PROFILE_FUNCTION();
 
 		// Note: Switch this to true to enable dockspace
 		static bool dockspaceOpen = true;
@@ -170,7 +170,6 @@ namespace Quantum {
 
 		style.WindowMinSize.x = minWinSizeX;
 
-//Menu bar work
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
@@ -191,13 +190,12 @@ namespace Quantum {
 				ImGui::EndMenu();
 			}
 
-			ImGui::EndMenuBar();//End of Menu bar work
+			ImGui::EndMenuBar();
 		}
-//scene hierarchy panel + content browser panel
+
 		m_SceneHierarchyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 
-//status panel
 		ImGui::Begin("Stats");
 
 		std::string name = "None";
@@ -211,6 +209,7 @@ namespace Quantum {
 		ImGui::Text("Quads: %d", stats.QuadCount);
 		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
+
 		ImGui::End();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -236,7 +235,7 @@ namespace Quantum {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				const wchar_t* path = (const wchar_t*)payload->Data;
-				OpenScene(std::filesystem::path(g_AssetsPath) / path);
+				OpenScene(std::filesystem::path(g_AssetPath) / path);
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -313,32 +312,29 @@ namespace Quantum {
 
 		ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-
 		float size = ImGui::GetWindowHeight() - 4.0f;
-			Ref<Texture2D> icon = (m_SceneState == SceneState::Edit) ? m_IconPlay : m_IconStop;
-			ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
-			if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0))
-			{
-				if (m_SceneState == SceneState::Edit)
-					OnScenePlay();
-				else if (m_SceneState == SceneState::Play)
-					OnSceneStop();
-
-			}
-			ImGui::PopStyleVar(2);
-			ImGui::PopStyleColor(3);
-			ImGui::End();
+		Ref<Texture2D> icon = m_SceneState == SceneState::Edit ? m_IconPlay : m_IconStop;
+		ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
+		if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0))
+		{
+			if (m_SceneState == SceneState::Edit)
+				OnScenePlay();
+			else if (m_SceneState == SceneState::Play)
+				OnSceneStop();
+		}
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor(3);
+		ImGui::End();
 	}
+
 	void EditorLayer::OnEvent(Event& e)
 	{
 		m_CameraController.OnEvent(e);
-
-			m_EditorCamera.OnEvent(e);
-		
+		m_EditorCamera.OnEvent(e);
 
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(QT_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(QT_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
+		dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(HZ_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
 	}
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
@@ -409,7 +405,7 @@ namespace Quantum {
 			}
 			case Key::R:
 			{
-			if(!ImGuizmo::IsUsing())
+				if (!ImGuizmo::IsUsing())
 					m_GizmoType = ImGuizmo::OPERATION::SCALE;
 				break;
 			}
@@ -425,63 +421,7 @@ namespace Quantum {
 		}
 		return false;
 	}
-/*
-	void EditorLayer::OnOverlayRender()
-	{
-		if (m_SceneState == SceneState::Play)
-		{
-			Entity camera = m_ActiveScene->GetPrimaryCameraEntity();
-			if (!camera)
-				return;
-			
-			Renderer2D::BeginScene(camera.GetComponent<CameraComponent>().Camera, camera.GetComponent<TransformComponent>().GetTransform());
-		}
-		else
-		{
-			Renderer2D::BeginScene(m_EditorCamera);
-		}
 
-		if (m_ShowPhysicsColliders)
-		{
-			// Box Colliders
-			{
-				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
-				for (auto entity : view)
-				{
-					auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
-
-					glm::vec3 translation = tc.Translation + glm::vec3(bc2d.Offset, 0.001f);
-					glm::vec3 scale = tc.Scale * glm::vec3(bc2d.Size * 2.0f, 1.0f);
-
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-						* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
-						* glm::scale(glm::mat4(1.0f), scale);
-
-					Renderer2D::DrawRect(transform, glm::vec4(0, 1, 0, 1));
-				}
-			}
-
-			// Circle Colliders
-			{
-				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
-				for (auto entity : view)
-				{
-					auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
-
-					glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, 0.001f);
-					glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
-
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-						* glm::scale(glm::mat4(1.0f), scale);
-
-					Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.01f);
-				}
-			}
-		}
-
-		Renderer2D::EndScene();
-	}
-*/
 	void EditorLayer::NewScene()
 	{
 		m_ActiveScene = CreateRef<Scene>();
@@ -493,7 +433,7 @@ namespace Quantum {
 
 	void EditorLayer::OpenScene()
 	{
-		std::string filepath = FileDialogs::OpenFile("Quantum Scene (*.quantum)\0*.quantum\0");
+		std::string filepath = FileDialogs::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
 		if (!filepath.empty())
 			OpenScene(filepath);
 	}
@@ -503,15 +443,15 @@ namespace Quantum {
 		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
 
-		if (path.extension().string() != ".quantum")
+		if (path.extension().string() != ".hazel")
 		{
-			QT_WARN("Could not load {0} - not a scene file", path.filename().string());
+			HZ_WARN("Could not load {0} - not a scene file", path.filename().string());
 			return;
 		}
 		
 		Ref<Scene> newScene = CreateRef<Scene>();
 		SceneSerializer serializer(newScene);
-		if (serializer.DeSerialize(path.string()))
+		if (serializer.Deserialize(path.string()))
 		{
 			m_EditorScene = newScene;
 			m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
@@ -532,7 +472,7 @@ namespace Quantum {
 
 	void EditorLayer::SaveSceneAs()
 	{
-		std::string filepath = FileDialogs::SaveFile("Quantum Scene (*.quantum)\0*.quantum\0");
+		std::string filepath = FileDialogs::SaveFile("Hazel Scene (*.hazel)\0*.hazel\0");
 		if (!filepath.empty())
 		{
 			SerializeScene(m_ActiveScene, filepath);
@@ -548,8 +488,6 @@ namespace Quantum {
 
 	void EditorLayer::OnScenePlay()
 	{
-
-
 		m_SceneState = SceneState::Play;
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
@@ -557,29 +495,9 @@ namespace Quantum {
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
-/*
-	void EditorLayer::OnSceneSimulate()
-	{
-		if (m_SceneState == SceneState::Play)
-			OnSceneStop();
 
-		m_SceneState = SceneState::Simulate;
-
-		m_ActiveScene = Scene::Copy(m_EditorScene);
-		m_ActiveScene->OnSimulationStart();
-
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-	}
-*/
 	void EditorLayer::OnSceneStop()
 	{
-/*		QT_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate);
-
-		if (m_SceneState == SceneState::Play)
-			m_ActiveScene->OnRuntimeStop();
-		else if (m_SceneState == SceneState::Simulate)
-			m_ActiveScene->OnSimulationStop();
-*/
 		m_SceneState = SceneState::Edit;
 
 		m_ActiveScene->OnRuntimeStop();

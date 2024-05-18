@@ -1,46 +1,46 @@
-#include"qtpch.h"
-#include"Buffer.h"
-#include"Renderer.h"
-#include"Platform/OpenGL/OpenGLBuffer.h"
-namespace Quantum {
+#include "hzpch.h"
+#include "Hazel/Renderer/Buffer.h"
 
+#include "Hazel/Renderer/Renderer.h"
+
+#include "Platform/OpenGL/OpenGLBuffer.h"
+
+namespace Hazel {
 
 	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: QT_CORE_ASSERT(false, "Renderer API None is currently not supported!");
-			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLVertexBuffer>(size);
+			case RendererAPI::API::None:    HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+			case RendererAPI::API::OpenGL:  return CreateRef<OpenGLVertexBuffer>(size);
 		}
-		QT_CORE_ASSERT(false, "Unkown RendererAPI!");
+
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-
 
 	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: QT_CORE_ASSERT(false, "Renderer API None is currently not supported!");
-			return nullptr;
-		case RendererAPI::API::OpenGL :
-			return CreateRef<OpenGLVertexBuffer>(vertices, size);
+			case RendererAPI::API::None:    HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+			case RendererAPI::API::OpenGL:  return CreateRef<OpenGLVertexBuffer>(vertices, size);
 		}
-		QT_CORE_ASSERT(false, "Unkown RendererAPI!");
+
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indecies, uint32_t size)
+
+	Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: QT_CORE_ASSERT(false, "Renderer API None is currently not supported!");
-			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLIndexBuffer>(indecies, size);
+			case RendererAPI::API::None:    HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+			case RendererAPI::API::OpenGL:  return CreateRef<OpenGLIndexBuffer>(indices, size);
 		}
-		QT_CORE_ASSERT(false, "Unkown RendererAPI!");
+
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
+
 }

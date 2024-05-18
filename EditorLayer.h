@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Quantum.h"
+#include "Hazel.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 
-#include "Quantum/Renderer/EditorCamera.h"
+#include "Hazel/Renderer/EditorCamera.h"
 
-namespace Quantum {
+namespace Hazel {
 
 	class EditorLayer : public Layer
 	{
@@ -17,13 +17,12 @@ namespace Quantum {
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 
-		void OnUpdate(TimeStep ts) override;
+		void OnUpdate(Timestep ts) override;
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event& e) override;
 	private:
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
-		
 
 		void NewScene();
 		void OpenScene();
@@ -41,7 +40,7 @@ namespace Quantum {
 		// UI Panels
 		void UI_Toolbar();
 	private:
-		Quantum::OrthographicCameraController m_CameraController;
+		Hazel::OrthographicCameraController m_CameraController;
 
 		// Temp
 		Ref<VertexArray> m_SquareVA;
@@ -70,8 +69,6 @@ namespace Quantum {
 		glm::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
 
 		int m_GizmoType = -1;
-
-		//bool m_ShowPhysicsColliders = false;
 
 		enum class SceneState
 		{

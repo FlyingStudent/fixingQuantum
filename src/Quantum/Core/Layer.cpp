@@ -1,10 +1,11 @@
-#include"qtpch.h"
-#include"Layer.h"
-namespace Quantum {
-	Layer::Layer(const std::string& debugName)
-		:m_DebugName(debugName)
-	{
+#include "hzpch.h"
+#include "Hazel/Core/Layer.h"
 
+namespace Hazel {
+
+	Layer::Layer(const std::string& debugName)
+		: m_DebugName(debugName)
+	{
 	}
 	
 }

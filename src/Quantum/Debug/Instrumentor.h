@@ -9,9 +9,9 @@
 #include <mutex>
 #include <sstream>
 
-#include "Quantum/Core/Log.h"
+#include "Hazel/Core/Log.h"
 
-namespace Quantum {
+namespace Hazel {
 
 	using FloatingPointMicroseconds = std::chrono::duration<double, std::micro>;
 
@@ -46,7 +46,7 @@ namespace Quantum {
 				// profiling output.
 				if (Log::GetCoreLogger()) // Edge case: BeginSession() might be before Log::Init()
 				{
-					QT_CORE_ERROR("Instrumentor::BeginSession('{0}') when session '{1}' already open.", name, m_CurrentSession->Name);
+					HZ_CORE_ERROR("Instrumentor::BeginSession('{0}') when session '{1}' already open.", name, m_CurrentSession->Name);
 				}
 				InternalEndSession();
 			}
@@ -54,14 +54,14 @@ namespace Quantum {
 
 			if (m_OutputStream.is_open())
 			{
-				m_CurrentSession = new InstrumentationSession({ name });
+				m_CurrentSession = new InstrumentationSession({name});
 				WriteHeader();
 			}
 			else
 			{
 				if (Log::GetCoreLogger()) // Edge case: BeginSession() might be before Log::Init()
 				{
-					QT_CORE_ERROR("Instrumentor could not open results file '{0}'.", filepath);
+					HZ_CORE_ERROR("Instrumentor could not open results file '{0}'.", filepath);
 				}
 			}
 		}
@@ -109,7 +109,7 @@ namespace Quantum {
 		~Instrumentor()
 		{
 			EndSession();
-		}
+		}		
 
 		void WriteHeader()
 		{
@@ -202,39 +202,39 @@ namespace Quantum {
 	}
 }
 
-#define QT_PROFILE 0
-#if QT_PROFILE
-// Resolve which function signature macro will be used. Note that this only
-// is resolved when the (pre)compiler starts, so the syntax highlighting
-// could mark the wrong one in your editor!
-#if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || (defined(__ICC) && (__ICC >= 600)) || defined(__ghs__)
-#define QT_FUNC_SIG __PRETTY_FUNCTION__
-#elif defined(__DMC__) && (__DMC__ >= 0x810)
-#define QT_FUNC_SIG __PRETTY_FUNCTION__
-#elif (defined(__FUNCSIG__) || (_MSC_VER))
-#define QT_FUNC_SIG __FUNCSIG__
-#elif (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 600)) || (defined(__IBMCPP__) && (__IBMCPP__ >= 500))
-#define QT_FUNC_SIG __FUNCTION__
-#elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x550)
-#define QT_FUNC_SIG __FUNC__
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901)
-#define QT_FUNC_SIG __func__
-#elif defined(__cplusplus) && (__cplusplus >= 201103)
-#define QT_FUNC_SIG __func__
-#else
-#define QT_FUNC_SIG "QT_FUNC_SIG unknown!"
-#endif
+#define HZ_PROFILE 0
+#if HZ_PROFILE
+	// Resolve which function signature macro will be used. Note that this only
+	// is resolved when the (pre)compiler starts, so the syntax highlighting
+	// could mark the wrong one in your editor!
+	#if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || (defined(__ICC) && (__ICC >= 600)) || defined(__ghs__)
+		#define HZ_FUNC_SIG __PRETTY_FUNCTION__
+	#elif defined(__DMC__) && (__DMC__ >= 0x810)
+		#define HZ_FUNC_SIG __PRETTY_FUNCTION__
+	#elif (defined(__FUNCSIG__) || (_MSC_VER))
+		#define HZ_FUNC_SIG __FUNCSIG__
+	#elif (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 600)) || (defined(__IBMCPP__) && (__IBMCPP__ >= 500))
+		#define HZ_FUNC_SIG __FUNCTION__
+	#elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x550)
+		#define HZ_FUNC_SIG __FUNC__
+	#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901)
+		#define HZ_FUNC_SIG __func__
+	#elif defined(__cplusplus) && (__cplusplus >= 201103)
+		#define HZ_FUNC_SIG __func__
+	#else
+		#define HZ_FUNC_SIG "HZ_FUNC_SIG unknown!"
+	#endif
 
-#define QT_PROFILE_BEGIN_SESSION(name, filepath) ::Quantum::Instrumentor::Get().BeginSession(name, filepath)
-#define QT_PROFILE_END_SESSION() ::Quantum::Instrumentor::Get().EndSession()
-#define QT_PROFILE_SCOPE_LINE2(name, line) constexpr auto fixedName##line = ::Quantum::InstrumentorUtils::CleanupOutputString(name, "__cdecl ");\
-											   ::Quantum::InstrumentationTimer timer##line(fixedName##line.Data)
-#define QT_PROFILE_SCOPE_LINE(name, line) QT_PROFILE_SCOPE_LINE2(name, line)
-#define QT_PROFILE_SCOPE(name) QT_PROFILE_SCOPE_LINE(name, __LINE__)
-#define QT_PROFILE_FUNCTION() QT_PROFILE_SCOPE(QT_FUNC_SIG)
+	#define HZ_PROFILE_BEGIN_SESSION(name, filepath) ::Hazel::Instrumentor::Get().BeginSession(name, filepath)
+	#define HZ_PROFILE_END_SESSION() ::Hazel::Instrumentor::Get().EndSession()
+	#define HZ_PROFILE_SCOPE_LINE2(name, line) constexpr auto fixedName##line = ::Hazel::InstrumentorUtils::CleanupOutputString(name, "__cdecl ");\
+											   ::Hazel::InstrumentationTimer timer##line(fixedName##line.Data)
+	#define HZ_PROFILE_SCOPE_LINE(name, line) HZ_PROFILE_SCOPE_LINE2(name, line)
+	#define HZ_PROFILE_SCOPE(name) HZ_PROFILE_SCOPE_LINE(name, __LINE__)
+	#define HZ_PROFILE_FUNCTION() HZ_PROFILE_SCOPE(HZ_FUNC_SIG)
 #else
-#define QT_PROFILE_BEGIN_SESSION(name, filepath)
-#define QT_PROFILE_END_SESSION()
-#define QT_PROFILE_SCOPE(name)
-#define QT_PROFILE_FUNCTION()
+	#define HZ_PROFILE_BEGIN_SESSION(name, filepath)
+	#define HZ_PROFILE_END_SESSION()
+	#define HZ_PROFILE_SCOPE(name)
+	#define HZ_PROFILE_FUNCTION()
 #endif

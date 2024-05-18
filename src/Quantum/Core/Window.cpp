@@ -1,19 +1,20 @@
-#include "qtpch.h"
-#include "Quantum/Core/Window.h"
+#include "hzpch.h"
+#include "Hazel/Core/Window.h"
 
-#ifdef QT_PLATFORM_WINDOWS
-#include"Platform/Windows/WindowsWindow.h"
+#ifdef HZ_PLATFORM_WINDOWS
+	#include "Platform/Windows/WindowsWindow.h"
 #endif
-namespace Quantum
+
+namespace Hazel
 {
 	Scope<Window> Window::Create(const WindowProps& props)
 	{
-#ifdef QT_PLATFORM_WINDOWS
+	#ifdef HZ_PLATFORM_WINDOWS
 		return CreateScope<WindowsWindow>(props);
-#else
-		QT_CORE_ASSERT(false, "Unknown platform!");
+	#else
+		HZ_CORE_ASSERT(false, "Unknown platform!");
 		return nullptr;
-#endif
+	#endif
 	}
 
 }

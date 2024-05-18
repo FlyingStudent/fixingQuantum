@@ -1,25 +1,26 @@
 #pragma once
-#include "Quantum/Core/Base.h"
-#include "Quantum/Core/Application.h"
-#ifdef QT_PLATFORM_WINDOWS
+#include "Hazel/Core/Base.h"
+#include "Hazel/Core/Application.h"
 
-extern Quantum::Application* Quantum::CreateApplication(ApplicationCommandLineArgs args);
-int  main(int argc, char** argv)
+#ifdef HZ_PLATFORM_WINDOWS
+
+extern Hazel::Application* Hazel::CreateApplication(ApplicationCommandLineArgs args);
+
+int main(int argc, char** argv)
 {
-	Quantum::Log::Init();
+	Hazel::Log::Init();
 
-	QT_PROFILE_BEGIN_SESSION("StartUp", "QuantumProfile-Startup.json");
-	auto app = Quantum::CreateApplication({argc,argv});
-	QT_PROFILE_END_SESSION();
+	HZ_PROFILE_BEGIN_SESSION("Startup", "HazelProfile-Startup.json");
+	auto app = Hazel::CreateApplication({ argc, argv });
+	HZ_PROFILE_END_SESSION();
 
-	QT_PROFILE_BEGIN_SESSION("Runtime", "QuantumProfile-Runtime.json");
+	HZ_PROFILE_BEGIN_SESSION("Runtime", "HazelProfile-Runtime.json");
 	app->Run();
-	QT_PROFILE_END_SESSION();
-	
-	QT_PROFILE_BEGIN_SESSION("Shutdown", "QuantumProfile-Shutdown.json");
+	HZ_PROFILE_END_SESSION();
+
+	HZ_PROFILE_BEGIN_SESSION("Shutdown", "HazelProfile-Shutdown.json");
 	delete app;
-	QT_PROFILE_END_SESSION();
-	
+	HZ_PROFILE_END_SESSION();
 }
 
 #endif

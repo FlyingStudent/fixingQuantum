@@ -1,15 +1,20 @@
 #pragma once
-#include"Quantum/Core/Base.h"
-#include"Layer.h"
-#include<vector>
-namespace Quantum {
-	class  LayerStack {
-	public :
+
+#include "Hazel/Core/Base.h"
+#include "Hazel/Core/Layer.h"
+
+#include <vector>
+
+namespace Hazel {
+
+	class LayerStack
+	{
+	public:
 		LayerStack() = default;
 		~LayerStack();
-		
+
 		void PushLayer(Layer* layer);
-		void PushOverlay(Layer* overlaye);
+		void PushOverlay(Layer* overlay);
 		void PopLayer(Layer* layer);
 		void PopOverlay(Layer* overlay);
 
@@ -22,9 +27,9 @@ namespace Quantum {
 		std::vector<Layer*>::const_iterator end()	const { return m_Layers.end(); }
 		std::vector<Layer*>::const_reverse_iterator rbegin() const { return m_Layers.rbegin(); }
 		std::vector<Layer*>::const_reverse_iterator rend() const { return m_Layers.rend(); }
-
 	private:
 		std::vector<Layer*> m_Layers;
-		unsigned int  m_LayerInsertIndex = 0 ;
+		unsigned int m_LayerInsertIndex = 0;
 	};
+
 }
