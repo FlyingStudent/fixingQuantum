@@ -1,9 +1,13 @@
-#pragma once 
-#include "Quantum/Core/Base.h"
-#include"Quantum/Scene/Scene.h"
-#include"Quantum/Scene/Entity.h"
-namespace Quantum {
-	class SceneHierarchyPanel {
+#pragma once
+
+#include "Hazel/Core/Base.h"
+#include "Hazel/Scene/Scene.h"
+#include "Hazel/Scene/Entity.h"
+
+namespace Hazel {
+
+	class SceneHierarchyPanel
+	{
 	public:
 		SceneHierarchyPanel() = default;
 		SceneHierarchyPanel(const Ref<Scene>& scene);
@@ -21,4 +25,5 @@ namespace Quantum {
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
 	};
+
 }
